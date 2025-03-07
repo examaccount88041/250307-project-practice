@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+{% include 'toolbar.html' %}
+
+    <div class="products_container" id="productContainer">
+        {% for product in products %}
+        <div class="card">
+            <img src="../resources/1.jpg" alt="{{ product.name }}">
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.cost }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
