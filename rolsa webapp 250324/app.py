@@ -1,7 +1,10 @@
+import re
 import secrets
 import sqlite3
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import bcrypt
+from validation_functions import is_valid_email, is_valid_password, is_valid_phone
 
 app = Flask(__name__)
 
@@ -15,11 +18,18 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True    # Prevent JavaScript access
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'   # CSRF protection
 
 
+# function to hash inputted password
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password
+
+
 # connects to database
 def get_database_connection():
 
     # use app.instance_path to make path to database folder (very secure probably)
-    db_path = os.path.join(app.instance_path, 'customers.db')
+    db_path = os.path.join(app.instance_path, 'customerdata.db')
 
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row  # accesses rows by column name
@@ -31,10 +41,30 @@ def get_database_connection():
     #     cursor.execute('SELECT * FROM customers') <- query goes here
 
 
+
 # landing page
 @app.route('/')
 def index():
-    return redirect(url_for('home'))
+
+    option = input("1: launch website\n"
+                   "2: check for existing database\n"
+                   "> ")
+
+    if option == '2':
+        # Get database connection
+        conn = get_database_connection()
+        cursor = conn.cursor()
+
+        # Execute SQL query to count rows in the 'customers' table
+        cursor.execute('SELECT COUNT(*) FROM customers')
+        row_count = cursor.fetchone()[0]  # Fetch the first result and get the count
+
+        # Return the row count as a simple response
+        return f'Number of customers: {row_count}'
+
+    else:
+        return redirect(url_for('home'))
+
 
 
 # home page
@@ -53,10 +83,12 @@ def login_page():
 @app.route('/login', methods=['POST'])
 def login():
 
+    # gets input data from html
     email = request.form['email']
     password = request.form['password']
 
-    ## hash password
+    # hashes inputted password
+    hashed_password = hash_password(password)
 
     # connect to database
     conn = get_database_connection()
@@ -66,7 +98,7 @@ def login():
     cursor.execute('SELECT * FROM customers WHERE email = ?', (email,))
     user = cursor.fetchone()
 
-    if user and user['password'] == password:  # directly compare passwords
+    if user and user['password'] == hashed_password:  # directly compare passwords
         session['user_id'] = user['id']  # store user id in session
         print("Successful login!")
         conn.close()
@@ -98,18 +130,39 @@ def register():
     first_name = request.form.get('first_name', None)
     last_name = request.form.get('last_name', None)
     email = request.form.get('email', None)
-    address = request.form.get('address', None)
     city = request.form.get('city', None)
+    address = request.form.get('address', None)
     postcode = request.form.get('postcode', None)
     phone = request.form.get('phone', None)
     password = request.form.get('password', None)
+
+    # validation
+    # Check if all fields are filled
+    if not all([first_name, last_name, email, city, address, postcode, phone, password]):
+        print("All fields are required.")
+        return redirect(url_for('register'))
+
+    # Validate email format
+    if not is_valid_email(email):
+        print("Invalid email format.")
+        return redirect(url_for('register'))
+
+    # Validate phone number
+    if not is_valid_phone(phone):
+        print("Invalid phone number. Please enter a valid 10-digit phone number.")
+        return redirect(url_for('register'))
+
+    # Validate password length
+    if not is_valid_password(password):
+        print("Password must be at least 8 characters long.")
+        return redirect(url_for('register'))
 
     # check if phone and email already exists
     with get_database_connection() as conn:
         email_exists = \
         conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE email = ?);', (email,)).fetchone()[0]
         phone_exists = \
-        conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE phone_number = ?);', (phone,)).fetchone()[0]
+        conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE phone = ?);', (phone,)).fetchone()[0]
 
     # if email or phone is already in database
     if email_exists or phone_exists:
@@ -123,14 +176,14 @@ def register():
         conn = get_database_connection()
         # add information to database
         conn.execute('''
-            INSERT INTO customers (forename, surname, email, address, city, postcode, phone_number, password)
+            INSERT INTO customers (forename, surname, email, city, address, postcode, phone, password)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-        ''', (first_name, last_name, email, address, city, postcode, phone, password))
+        ''', (first_name, last_name, email, city, address, postcode, phone, password))
         conn.commit()
         conn.close()
 
         return redirect(url_for('login'))
 
 
-
-app.run()
+if __name__ == '__main__':
+    app.run(debug=True)

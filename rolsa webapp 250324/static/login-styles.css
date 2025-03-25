@@ -11,6 +11,10 @@
     align-items: center;
 }
 
+.body-2 {
+    margin: 0;
+}
+
 .login-box {
     position: relative;
     top: 100px;
