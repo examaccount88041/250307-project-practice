@@ -8,14 +8,13 @@ from validation_functions import is_valid_email, is_valid_password, is_valid_pho
 
 app = Flask(__name__)
 
-
 # cookie security
 secret_key = secrets.token_hex(16)
 app.secret_key = secret_key
 
-app.config['SESSION_COOKIE_SECURE'] = True      # Send cookies over HTTPS only
-app.config['SESSION_COOKIE_HTTPONLY'] = True    # Prevent JavaScript access
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'   # CSRF protection
+app.config['SESSION_COOKIE_SECURE'] = True  # Send cookies over HTTPS only
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
 
 
 # function to hash inputted password
@@ -25,9 +24,13 @@ def hash_password(password):
     return hashed_password
 
 
+def check_password(password, stored_hash):
+    # Check if the input password matches the stored hash
+    return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
+
+
 # connects to database
 def get_database_connection():
-
     # use app.instance_path to make path to database folder (very secure probably)
     db_path = os.path.join(app.instance_path, 'customerdata.db')
 
@@ -41,11 +44,16 @@ def get_database_connection():
     #     cursor.execute('SELECT * FROM customers') <- query goes here
 
 
+# passing session data
+@app.context_processor
+def inject_user():
+    user_id = session.get('user_id')
+    return dict(user_id=user_id)
+
 
 # landing page
 @app.route('/')
 def index():
-
     option = input("1: launch website\n"
                    "2: check for existing database\n"
                    "> ")
@@ -66,7 +74,6 @@ def index():
         return redirect(url_for('home'))
 
 
-
 # home page
 @app.route('/home')
 def home():
@@ -82,13 +89,9 @@ def login_page():
 # login logic
 @app.route('/login', methods=['POST'])
 def login():
-
     # gets input data from html
     email = request.form['email']
     password = request.form['password']
-
-    # hashes inputted password
-    hashed_password = hash_password(password)
 
     # connect to database
     conn = get_database_connection()
@@ -98,9 +101,21 @@ def login():
     cursor.execute('SELECT * FROM customers WHERE email = ?', (email,))
     user = cursor.fetchone()
 
-    if user and user['password'] == hashed_password:  # directly compare passwords
-        session['user_id'] = user['id']  # store user id in session
+    # DEVELOPER TO REMOVE
+    if user:
+        print("Email found")
+    else:
+        print("Email not found")
+
+    if check_password(password, user['password']):  # if hashed passwords match
+        session['user_id'] = user['customer_id']  # store user id in session
         print("Successful login!")
+
+        if user:
+            print("Logged in as ", user['customer_id'])
+        else:
+            print("User is false for some reason")
+
         conn.close()
         return redirect(url_for('home'))  # redirects after successful login
 
@@ -110,15 +125,16 @@ def login():
         conn.close()
         return redirect(url_for('login'))  # redirect to login page
 
+
 # logout button
 @app.route('/logout')
 def logout():
-    session.pop('username', None)  # remove cookie
+    session.pop('user_id', None)  # remove cookie
     return redirect(url_for('login'))
 
 
 # register page
-@app.route('/register',methods=['GET'])
+@app.route('/register', methods=['GET'])
 def register_page():
     return render_template('register.html')
 
@@ -126,7 +142,6 @@ def register_page():
 # register logic
 @app.route('/register', methods=['POST'])
 def register():
-
     first_name = request.form.get('first_name', None)
     last_name = request.form.get('last_name', None)
     email = request.form.get('email', None)
@@ -140,29 +155,44 @@ def register():
     # Check if all fields are filled
     if not all([first_name, last_name, email, city, address, postcode, phone, password]):
         print("All fields are required.")
-        return redirect(url_for('register'))
+        return render_template('register.html',
+                               first_name=first_name, last_name=last_name, email=email,
+                               city=city, address=address, postcode=postcode,
+                               phone=phone)
 
     # Validate email format
     if not is_valid_email(email):
         print("Invalid email format.")
-        return redirect(url_for('register'))
+        return render_template('register.html',
+                               first_name=first_name, last_name=last_name, email=email,
+                               city=city, address=address, postcode=postcode,
+                               phone=phone)
 
     # Validate phone number
     if not is_valid_phone(phone):
-        print("Invalid phone number. Please enter a valid 10-digit phone number.")
-        return redirect(url_for('register'))
+        print("Invalid phone number.")
+        return render_template('register.html',
+                               first_name=first_name, last_name=last_name, email=email,
+                               city=city, address=address, postcode=postcode,
+                               phone=phone)
 
     # Validate password length
     if not is_valid_password(password):
-        print("Password must be at least 8 characters long.")
-        return redirect(url_for('register'))
+        print("Password must contain at least 8 characters and a number.")
+        return render_template('register.html',
+                               first_name=first_name, last_name=last_name, email=email,
+                               city=city, address=address, postcode=postcode,
+                               phone=phone)
+
+    # hash password
+    hashed_password = hash_password(password)
 
     # check if phone and email already exists
     with get_database_connection() as conn:
         email_exists = \
-        conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE email = ?);', (email,)).fetchone()[0]
+            conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE email = ?);', (email,)).fetchone()[0]
         phone_exists = \
-        conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE phone = ?);', (phone,)).fetchone()[0]
+            conn.execute('SELECT EXISTS(SELECT 1 FROM customers WHERE phone = ?);', (phone,)).fetchone()[0]
 
     # if email or phone is already in database
     if email_exists or phone_exists:
@@ -178,7 +208,7 @@ def register():
         conn.execute('''
             INSERT INTO customers (forename, surname, email, city, address, postcode, phone, password)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-        ''', (first_name, last_name, email, city, address, postcode, phone, password))
+        ''', (first_name, last_name, email, city, address, postcode, phone, hashed_password))
         conn.commit()
         conn.close()
 
