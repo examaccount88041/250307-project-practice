@@ -18,6 +18,7 @@
 .login-box {
     position: relative;
     top: 100px;
+    justify-self: center;
     background: #202127;
     width: 500px;
     height: auto;

@@ -54,24 +54,7 @@ def inject_user():
 # landing page
 @app.route('/')
 def index():
-    option = input("1: launch website\n"
-                   "2: check for existing database\n"
-                   "> ")
-
-    if option == '2':
-        # Get database connection
-        conn = get_database_connection()
-        cursor = conn.cursor()
-
-        # Execute SQL query to count rows in the 'customers' table
-        cursor.execute('SELECT COUNT(*) FROM customers')
-        row_count = cursor.fetchone()[0]  # Fetch the first result and get the count
-
-        # Return the row count as a simple response
-        return f'Number of customers: {row_count}'
-
-    else:
-        return redirect(url_for('home'))
+    return redirect(url_for('home'))
 
 
 # home page
