@@ -135,15 +135,16 @@ body {
     border-style: solid;
     border-width: 2px;
     border-color: #e0e0e2;
+    background-color: rgb(12, 12, 20);;
     color: #e0e0e2;
-    background: rgba(12, 12, 20, 0.9);
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .home-page-container button:hover {
     border-color: #69dc9f;
-    background: #69dc9f;
+    background-color: #69dc9f;
     color: rgb(12, 12, 20);
-
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .home-page-container img {
@@ -165,7 +166,7 @@ body {
 
 .info-panels-container .info-panel {
     border-style: solid;
-    border-color: #202127;
+    border-color: #444;
     border-width: 2px;
     border-radius: 8px;
     background: #202127;
