@@ -1,0 +1,83 @@
+
+TO DO IN CODE:
+
+contact us page: customer support, booking, etc
+services page: products, search bar and filters
+profile: carbon footprint, view booking, change account info
+
+
+
+
+
+
+Test log: ideas
+
+information doesn't save in forms when validation check happens
+
+
+
+
+
+
+
+
+
+
+potential info page
+
+1. Panel for Green Technology:
+Title:
+Empowering Your Space with Green Technology
+
+Paragraph:
+At [Company Name], we specialize in providing personalized green tech solutions tailored to your needs. Whether it's energy-efficient solar panels, smart home energy systems, or eco-friendly heating solutions, we bring sustainable technology directly to you. Our goal is to help you reduce your carbon footprint while saving on energy costs, all with simple and efficient installations.
+
+2. Panel for the Company's Goal:
+Title:
+Our Goal: Greener Homes and Businesses
+
+Paragraph:
+We are dedicated to making green technology accessible to everyone. By focusing on smaller-scale, customizable installations, we aim to create a more sustainable future one home or business at a time. Our solutions help you lower energy consumption, reduce waste, and make a lasting impact on the environment — without the need for major infrastructure changes. Join us in building a greener world, starting right where you live or work.
+
+3. Panel for Relevant Statistics (Customer Contribution):
+Title:
+How You Can Make a Difference
+
+Paragraph:
+Your decision to install sustainable technologies makes a significant impact. Here’s how you can contribute:
+
+By switching to solar energy, you can reduce your annual electricity bill by up to 30%.
+
+Installing energy-efficient systems can cut your home’s carbon emissions by up to 50% each year.
+
+Together, our customers have reduced over 500,000 pounds of CO2 emissions to date by embracing green tech solutions. Every small step counts, and with your support, we’re creating a cleaner, greener world — one installation at a time.
+
+These revisions emphasize how customers can actively contribute to sustainability by adopting green technologies, fitting your company’s focus on smaller, scalable installations. Let me know if you'd like to refine them further!
+
+
+You said:
+now make a version of them that are much shortened
+
+ChatGPT said:
+Absolutely! Here’s a more concise version of each panel:
+
+1. Panel for Green Technology:
+Title:
+Empowering Your Space with Green Tech
+
+Paragraph:
+We offer customized green tech solutions like solar panels and energy-efficient systems to help reduce your carbon footprint and save on energy costs.
+
+2. Panel for the Company's Goal:
+Title:
+Our Goal: Greener Homes & Businesses
+
+Paragraph:
+We aim to make sustainability easy and affordable with small-scale, eco-friendly installations that help reduce energy use and promote a greener future.
+
+3. Panel for Relevant Statistics (Customer Contribution):
+Title:
+Your Impact on the Environment
+
+Paragraph:
+By adopting green tech, you can cut your energy bills by 30% and reduce carbon emissions by up to 50%. Together, we've saved over 500,000 lbs of CO2!
