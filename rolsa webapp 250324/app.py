@@ -95,6 +95,13 @@ def product_detail(product_name):
         return "Product not found", 404
 
 
+# contact page
+@app.route('/contact')
+def contact():
+
+    return render_template('contact.html')
+
+
 # login page
 @app.route('/login', methods=['GET'])
 def login_page():
