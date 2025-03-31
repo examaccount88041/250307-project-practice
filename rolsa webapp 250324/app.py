@@ -1,10 +1,12 @@
-import re
+
 import secrets
 import sqlite3
 import os
+import csv
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import bcrypt
 from validation_functions import is_valid_email, is_valid_password, is_valid_phone
+
 
 app = Flask(__name__)
 
@@ -15,6 +17,8 @@ app.secret_key = secret_key
 app.config['SESSION_COOKIE_SECURE'] = True  # Send cookies over HTTPS only
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
+
+products_csv_path = "static/csv/products.csv"
 
 
 # function to hash inputted password
@@ -44,6 +48,15 @@ def get_database_connection():
     #     cursor.execute('SELECT * FROM customers') <- query goes here
 
 
+def read_products_csv():
+    products = []
+    with open("static/csv/products.csv", newline='', encoding='utf-8') as csvfile:
+        csvreader = csv.DictReader(csvfile)
+        for row in csvreader:
+            products.append(row)
+    return products
+
+
 # passing session data
 @app.context_processor
 def inject_user():
@@ -61,6 +74,25 @@ def index():
 @app.route('/home')
 def home():
     return render_template('home.html')
+
+
+# list products page
+@app.route('/services')
+def services():
+    products = read_products_csv()
+    return render_template('services.html', products=products)
+
+
+# product profile, product information passed through csv from previous page
+@app.route('/product/<product_name>')
+def product_detail(product_name):
+    products = read_products_csv()
+    # Find the product by its name
+    product = next((prod for prod in products if prod['Name'] == product_name), None)
+    if product:
+        return render_template('product_profile.html', product=product)
+    else:
+        return "Product not found", 404
 
 
 # login page
@@ -84,30 +116,36 @@ def login():
     cursor.execute('SELECT * FROM customers WHERE email = ?', (email,))
     user = cursor.fetchone()
 
-    # DEVELOPER TO REMOVE
+
+
     if user:
         print("Email found")
+
+        try:
+            if check_password(password, user['password']):  # if hashed passwords match
+                session['user_id'] = user['customer_id']  # store user id in session
+
+                print("Successful login!")
+                print("Logged in as ", user['customer_id'])
+
+
+                conn.close()
+                return redirect(url_for('home'))  # redirects after successful login
+
+            else:  # if the email or passwords do not match
+                flash("Invalid credentials")
+                print("invalid credentials")
+                conn.close()
+                return redirect(url_for('login'))  # redirect to login page
+        except:
+            flash("We are having problems on our side. Please try again later.")
+            print("Database is not connected")
+            return redirect(url_for('login'))
+
     else:
         print("Email not found")
-
-    if check_password(password, user['password']):  # if hashed passwords match
-        session['user_id'] = user['customer_id']  # store user id in session
-        print("Successful login!")
-
-        if user:
-            print("Logged in as ", user['customer_id'])
-        else:
-            print("User is false for some reason")
-
-        conn.close()
-        return redirect(url_for('home'))  # redirects after successful login
-
-    else:  # if the email or passwords do not match
         flash("Invalid credentials")
-        print("invalid credentials")
-        conn.close()
-        return redirect(url_for('login'))  # redirect to login page
-
+        return redirect(url_for('login'))
 
 # logout button
 @app.route('/logout')
