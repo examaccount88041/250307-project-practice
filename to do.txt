@@ -4,9 +4,7 @@ TO DO IN CODE:
 contact us page: customer support, booking, etc
 services page: products, search bar and filters
 profile: carbon footprint, view booking, change account info
-
-
-
+at end - add login requirements to pages
 
 
 
