@@ -7,6 +7,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import bcrypt
 from validation_functions import is_valid_email, is_valid_password, is_valid_phone
 
+user = ""
 
 app = Flask(__name__)
 
@@ -31,6 +32,12 @@ def hash_password(password):
 def check_password(password, stored_hash):
     # Check if the input password matches the stored hash
     return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
+
+
+# function to check if user is logged in
+def check_login():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
 
 # connects to database
@@ -99,7 +106,12 @@ def product_detail(product_name):
 @app.route('/contact')
 def contact():
 
-    return render_template('contact.html')
+    check_login()
+
+    email = session.get('email')
+
+    return render_template('contact.html', email=email)
+
 
 
 # login page
@@ -130,7 +142,11 @@ def login():
 
         try:
             if check_password(password, user['password']):  # if hashed passwords match
+
+                # store user information in session
                 session['user_id'] = user['customer_id']  # store user id in session
+                session['email'] = user['email']
+
 
                 print("Successful login!")
                 print("Logged in as ", user['customer_id'])
