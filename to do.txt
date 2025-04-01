@@ -5,6 +5,7 @@ contact us page: customer support, booking, etc
 services page: products, search bar and filters
 profile: carbon footprint, view booking, change account info
 add flash messages to login and signup
+add a report an issue button
 at end - add login requirements to pages
 
 
