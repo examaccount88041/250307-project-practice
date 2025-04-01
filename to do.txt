@@ -11,14 +11,11 @@ at end - add login requirements to pages
 Test log: ideas
 
 information doesn't save in forms when validation check happens
-
-
-
-
-
-
-
-
+input field checks not returning error messages
+resizing breaks the page
+how I fixed the toolbar from being weird
+calendar availability issues
+security concerns
 
 
 potential info page
