@@ -29,8 +29,8 @@ def hash_password(password):
     return hashed_password
 
 
+# check if the input password matches the stored hash
 def check_password(password, stored_hash):
-    # Check if the input password matches the stored hash
     return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
 
 
@@ -52,9 +52,10 @@ def get_database_connection():
     #   how to use:
     #     conn = get_database_connection()
     #     cursor = conn.cursor()
-    #     cursor.execute('SELECT * FROM customers') <- query goes here
 
 
+# TO BE TURNED INTO DATABASE
+# reads csv data for product lists
 def read_products_csv():
     products = []
     with open("static/csv/products.csv", newline='', encoding='utf-8') as csvfile:
@@ -90,7 +91,7 @@ def services():
     return render_template('services.html', products=products)
 
 
-# product profile, product information passed through csv from previous page
+# product profile, product information passed from csv
 @app.route('/product/<product_name>')
 def product_detail(product_name):
     products = read_products_csv()
@@ -113,7 +114,6 @@ def contact():
     return render_template('contact.html', email=email)
 
 
-
 # login page
 @app.route('/login', methods=['GET'])
 def login_page():
@@ -134,8 +134,6 @@ def login():
     # check if the email exists in database
     cursor.execute('SELECT * FROM customers WHERE email = ?', (email,))
     user = cursor.fetchone()
-
-
 
     if user:
         print("Email found")
@@ -258,6 +256,35 @@ def register():
 
         return redirect(url_for('login'))
 
+
+# booking page
+@app.route('/booking', methods=['GET'])
+def booking_page():
+    check_login()
+    return render_template('booking.html')
+
+
+# booking logic
+@app.route('/booking', methods=['POST'])
+def booking():
+
+    # get info from form
+    date = request.form.get('date', None)
+    time = request.form.get('time', None)
+
+    # connect to database
+    conn = get_database_connection()
+    cursor = conn.cursor()
+
+    # fetch single row
+    user_id = session.get('user_id')
+    cursor.execute("SELECT * FROM customers WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    if user:
+
+
+    # add info to booking page
 
 if __name__ == '__main__':
     app.run(debug=True)
